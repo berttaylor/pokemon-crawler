@@ -1,0 +1,74 @@
+# Poke-specific Makefile, for local development.
+
+# Generic declarations
+PROJECT = pokemon-crawler
+INSTALL = pip install
+
+# Sets commands for individual containers
+BACKEND_RUN = docker-compose run --rm web /bin/bash -c
+BACKEND_EXEC = docker-compose exec web /bin/bash -c
+
+WORKER_RUN = docker-compose run --rm worker /bin/bash -c
+WORKER_EXEC = docker-compose exec worker /bin/bash -c
+
+DATABASE_RUN = docker-compose run --rm db /bin/bash -c
+DATABASE_EXEC = docker-compose exec db bash -c
+
+
+# DATABASE - Migration & DB tools
+planmigrations:
+	$(BACKEND_RUN) "./manage.py migrate --plan;"
+
+# Makes migrations for a single named app
+makemigrations:
+	$(BACKEND_RUN) "./manage.py makemigrations $(APP);"
+
+# Dry runs migration
+dryrunmigrations:
+	$(BACKEND_RUN) "./manage.py makemigrations $(APP) --dry-run --verbosity 3;"
+
+migrate:
+	$(BACKEND_RUN) "./manage.py migrate;"
+
+mergemakemigrations:
+	$(BACKEND_RUN) "./manage.py makemigrations --merge;"
+
+fakemigrate:
+	$(BACKEND_RUN) "./manage.py migrate --fake;"
+
+
+# WARNING - This drops your entire local db
+dropdb:
+	$(DATABASE_EXEC) "PGUSER=$(POSTGRES_USER) PGPASSWORD=$(POSTGRES_PASSWORD) dropdb $(POSTGRES_DB);"
+
+createdb:
+	$(DATABASE_EXEC) "PGUSER=$(POSTGRES_USER) PGHOST=$(POSTGRES_DB_HOST) PGPORT=$(POSTGRES_DB_PORT) PGPASSWORD=$(POSTGRES_PASSWORD) createdb $(POSTGRES_DB)"
+
+createsuperuser:
+	$(BACKEND_RUN) "cd $(PROJECT); ./manage.py createsuperuser;"
+
+# This accepts any manage.py argument passed through it by ARG1= on the command
+# line - for example: make manage ARG1=migrate ARG2=--plan
+# (This is can be useful for the less common manage.py tools you might need)
+manage:
+	$(BACKEND_RUN) "cd $(PROJECT); ./manage.py $(ARG1) $(ARG2);"
+
+# This accepts any pipenv install package passed to it by PKG on the command
+# line - for example: make install PKG=djangorestframework
+install:
+	$(BACKEND_RUN) "cd $(PROJECT); pip install $(PKG)"
+
+collectstatic:
+	$(BACKEND_RUN) "cd $(PROJECT); ./manage.py collectstatic --no-input;"
+
+djangocheck:
+	$(BACKEND_RUN) "cd $(PROJECT); ./manage.py check;"
+
+djangoshell:
+	$(BACKEND_RUN) "cd $(PROJECT); ./manage.py shell;"
+
+startapp:
+	$(BACKEND_RUN) "cd $(PROJECT); ./manage.py startapp $(APP);"
+
+changepassword:
+	$(BACKEND_RUN) "cd $(PROJECT); ./manage.py changepassword $(USER);"
