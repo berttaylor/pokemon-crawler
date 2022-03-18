@@ -20,11 +20,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         "is_active",
     )
 
-    search_fields = (
-        "email",
-        "first_name",
-        "last_name"
-    )
+    search_fields = ("email", "first_name", "last_name")
 
     fieldsets = (
         (
@@ -49,4 +45,8 @@ class CustomUserAdmin(admin.ModelAdmin):
         ),
     )
 
-    readonly_fields = ("password", "last_login", "date_joined",)
+    readonly_fields = (
+        "password",
+        "last_login",
+        "date_joined",
+    )

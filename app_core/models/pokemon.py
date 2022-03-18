@@ -1,5 +1,6 @@
-from app_core.models.base import TimeStampedBase
 from django.db import models
+
+from app_core.models.base import TimeStampedBase
 
 
 class Pokemon(TimeStampedBase):
@@ -17,11 +18,18 @@ class Pokemon(TimeStampedBase):
         unique=True,
     )
 
+    moves = models.ManyToManyField(
+        "Move",
+        related_name="pokemon",
+        help_text="Moves that can be performed by the pokemon",
+    )
+
     def __str__(self) -> str:
         return self.name
 
     class Meta:
         ordering = ["api_lookup_number"]
+        verbose_name_plural = "Pokemon"
 
 
 class Stats(TimeStampedBase):
@@ -29,31 +37,25 @@ class Stats(TimeStampedBase):
     Stats are numerical indicators of a Pokémon's ability, split into sections.
     """
 
-    related_pokemon = models.ForeignKey(
+    related_pokemon = models.OneToOneField(
         "Pokemon",
         related_name="stats",
         on_delete=models.CASCADE,
-        help_text="The pokemon that these statistics represent"
+        help_text="The pokemon that these statistics represent",
     )
 
-    hp = models.PositiveSmallIntegerField(
-        help_text="Hit Points"
-    )
+    hp = models.PositiveSmallIntegerField(help_text="Hit Points", default=0)
 
-    attack = models.PositiveSmallIntegerField(
-        help_text="Attack Power"
-    )
+    attack = models.PositiveSmallIntegerField(help_text="Attack Power", default=0)
 
-    defense = models.PositiveSmallIntegerField(
-        help_text="Defense Power"
-    )
+    defense = models.PositiveSmallIntegerField(help_text="Defense Power", default=0)
 
     special_attack = models.PositiveSmallIntegerField(
-        help_text="Special Attack Power"
+        help_text="Special Attack Power", default=0
     )
 
     special_defense = models.PositiveSmallIntegerField(
-        help_text="Special Defense Power"
+        help_text="Special Defense Power", default=0
     )
 
     def __str__(self) -> str:
@@ -68,43 +70,31 @@ class Move(TimeStampedBase):
     Moves are attacks that can be performed by a Pokémon.
     """
 
-    api_lookup_number = models.PositiveSmallIntegerField(
-        help_text="The lookup number we can use to query the API"
-    )
-
     name = models.CharField(
         help_text="The name of the move",
         max_length=255,
         unique=True,
     )
 
-    power = models.PositiveSmallIntegerField(
-        help_text="The amount of damage it does"
-    )
-
     type = models.ForeignKey(
         "MoveType",
         related_name="moves",
         on_delete=models.CASCADE,
-        help_text="The type of attack"
+        help_text="The type of attack",
+        null=True,
     )
 
     def __str__(self) -> str:
         return self.name
 
     class Meta:
-        ordering = ["related_pokemon__name"]
+        ordering = ["name"]
 
 
 class MoveType(TimeStampedBase):
     """
     MoveTypes are categories for the different moves
     """
-
-    api_lookup_number = models.PositiveSmallIntegerField(
-        help_text="The lookup number we can use to query the API",
-        unique=True,
-    )
 
     name = models.CharField(
         help_text="Name of the move type",
@@ -116,4 +106,4 @@ class MoveType(TimeStampedBase):
         return self.name
 
     class Meta:
-        ordering = ["name", ]
+        ordering = ["name"]

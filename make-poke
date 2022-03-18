@@ -14,6 +14,16 @@ WORKER_EXEC = docker-compose exec worker /bin/bash -c
 DATABASE_RUN = docker-compose run --rm db /bin/bash -c
 DATABASE_EXEC = docker-compose exec db bash -c
 
+# Basic
+up:
+	docker-compose up;
+
+down:
+	docker-compose down;
+
+build:
+	docker-compose build;
+
 # DATABASE - Migration & DB tools
 planmigrations:
 	$(BACKEND_RUN) "./manage.py migrate --plan;"
@@ -45,6 +55,12 @@ createdb:
 
 createsuperuser:
 	$(BACKEND_RUN) "./manage.py createsuperuser;"
+
+catch_em_all:
+	$(BACKEND_RUN) "./manage.py catch_em ALL;"
+
+catch_some:
+	$(BACKEND_RUN) "./manage.py catch_em SOME;"
 
 # This accepts any manage.py argument passed through it by ARG1= on the command
 # line - for example: make manage ARG1=migrate ARG2=--plan
